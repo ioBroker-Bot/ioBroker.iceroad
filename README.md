@@ -94,6 +94,8 @@ If the adapter displays the status "Ice" or "Maybe ice", it is possible to be no
 
 -   (Patrick Walther) initial release
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 
 The MIT License (MIT)
