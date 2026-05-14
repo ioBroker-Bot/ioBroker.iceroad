@@ -20,7 +20,7 @@ let user_locationName = '';
 
 class Iceroad extends utils.Adapter {
 	/**
-	 * @param {Partial<utils.AdapterOptions>} [options={}]
+	 * @param {Partial<utils.AdapterOptions>} [options]
 	 */
 	constructor(options) {
 		super({
@@ -91,11 +91,11 @@ class Iceroad extends utils.Adapter {
 			timeout: 10000,
 			responseType: 'json',
 		})
-			.then((response) => {
+			.then(response => {
 				this.log.debug(`received ${response.status} response from "${requestUrl}" with content: ${JSON.stringify(response.data)}`);
 				return response.data;
 			})
-			.catch((error) => {
+			.catch(error => {
 				if (error.response) {
 					// The request was made and the server responded with a status code
 					this.log.warn(`received error ${error.response.status} response from "${requestUrl}" with content: ${JSON.stringify(error.response.data)}`);
@@ -280,11 +280,14 @@ class Iceroad extends utils.Adapter {
 	async getInitValue(obj) {
 		//state can be null or undefinded
 		const foreignState = await this.getForeignStateAsync(obj);
-		if (foreignState) return foreignState.val;
+		if (foreignState) {
+			return foreignState.val;
+		}
 	}
 
 	/**
 	 * Notification service
+	 *
 	 * @param {string} text - Text which should be send
 	 */
 	async sendNotification(text) {
@@ -380,7 +383,7 @@ class Iceroad extends utils.Adapter {
 					const jsonText = JSON.stringify(text);
 					await this.setForeignStateAsync(
 						`${this.config.instanceJarvis}.addNotification`,
-						'{"title":"' + this.config.titleJarvis + ' (' + this.formatDate(new Date(), 'DD.MM.YYYY - hh:mm:ss') + ')","message": ' + jsonText + ',"display": "drawer"}',
+						`{"title":"${this.config.titleJarvis} (${this.formatDate(new Date(), 'DD.MM.YYYY - hh:mm:ss')})","message": ${jsonText},"display": "drawer"}`,
 					);
 				}
 			}
@@ -400,7 +403,7 @@ class Iceroad extends utils.Adapter {
 					const jsonText = JSON.stringify(text);
 					await this.setForeignStateAsync(
 						`${this.config.instanceLovelace}.notifications.add`,
-						'{"message":' + jsonText + ', "title":"' + this.config.titleLovelace + ' (' + this.formatDate(new Date(), 'DD.MM.YYYY - hh:mm:ss') + ')"}',
+						`{"message":${jsonText}, "title":"${this.config.titleLovelace} (${this.formatDate(new Date(), 'DD.MM.YYYY - hh:mm:ss')})"}`,
 					);
 				}
 			}
@@ -436,22 +439,22 @@ class Iceroad extends utils.Adapter {
 		const yy = d.getUTCFullYear();
 		const h = d.getHours();
 		const m = d.getMinutes();
-		const uhrzeit = (h <= 9 ? '0' + h : h) + ':' + (m <= 9 ? '0' + m : m);
-		const datum = yy + '-' + (mm <= 9 ? '0' + mm : mm) + '-' + (dd <= 9 ? '0' + dd : dd);
+		const uhrzeit = `${h <= 9 ? `0${h}` : h}:${m <= 9 ? `0${m}` : m}`;
+		const datum = `${yy}-${mm <= 9 ? `0${mm}` : mm}-${dd <= 9 ? `0${dd}` : dd}`;
 
 		await this.setStateAsync(`${c}.message`, {
 			val: JSON.stringify(f),
 			ack: true,
 		});
 		await this.setStateAsync(`${c}.requestDate`, {
-			val: datum + ' ' + uhrzeit,
+			val: `${datum} ${uhrzeit}`,
 			ack: true,
 		});
 		await this.setStateAsync(`${c}.forecastId`, { val: 0, ack: true });
 		await this.setStateAsync(`${c}.forecastText`, { val: '0', ack: true });
 		await this.setStateAsync(`${c}.forecastCity`, { val: '0', ack: true });
 		await this.setStateAsync(`${c}.forecastDate`, {
-			val: datum + ' ' + uhrzeit,
+			val: `${datum} ${uhrzeit}`,
 			ack: true,
 		});
 		await this.setStateAsync(`${c}.callsLeft`, { val: 0, ack: true });
@@ -650,6 +653,7 @@ class Iceroad extends utils.Adapter {
 
 	/**
 	 * Is called when adapter shuts down - callback has to be called under any circumstances!
+	 *
 	 * @param {() => void} callback
 	 */
 	onUnload(callback) {
@@ -657,7 +661,7 @@ class Iceroad extends utils.Adapter {
 			// clearTimeout(timeout2);.
 			// clearInterval(interval1);
 			callback();
-		} catch (e) {
+		} catch {
 			callback();
 		}
 	}
@@ -666,9 +670,9 @@ class Iceroad extends utils.Adapter {
 if (require.main !== module) {
 	// Export the constructor in compact mode
 	/**
-	 * @param {Partial<utils.AdapterOptions>} [options={}]
+	 * @param {Partial<utils.AdapterOptions>} [options]
 	 */
-	module.exports = (options) => new Iceroad(options);
+	module.exports = options => new Iceroad(options);
 } else {
 	// otherwise start the instance directly
 	new Iceroad();
